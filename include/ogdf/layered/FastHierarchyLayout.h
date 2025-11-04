@@ -114,11 +114,11 @@ public:
 
 
 private:
-	int n; //!< The number of nodes including virtual nodes.
-	int m; //!< The number edge sections.
-	int k; //!< The number of layers.
-	int* layer; //!< Stores for every node its layer.
-	int* first; //!< Stores for every layer the index of the first node.
+	int n = 0; //!< The number of nodes including virtual nodes.
+	int m = 0; //!< The number edge sections.
+	int k = 0; //!< The number of layers.
+	std::unique_ptr<int[]> layer; //!< Stores for every node its layer.
+	std::unique_ptr<int[]> first; //!< Stores for every layer the index of the first node.
 
 
 	// nodes are numbered top down and from left to right.
@@ -132,7 +132,7 @@ private:
 	 * for every node : adj[0][node] list of neighbors in previous layer;
 	 * for every node : adj[1][node] list of neighbors in next layer
 	 */
-	List<int>* adj[2];
+	std::unique_ptr<List<int>[]> adj[2];
 
 	/**
 	 * \brief The nodes belonging to a long edge.
@@ -140,24 +140,24 @@ private:
 	 * for every node : longEdge[node] is a pointer to a list containing all
 	 * nodes that belong to the same long edge as node.
 	 */
-	List<int>** longEdge;
+	std::unique_ptr < std::unique_ptr<List<int>>[]> longEdge;
 
-	double m_minNodeDist; //!< The minimal node distance on a layer.
-	double m_minLayerDist; //!< The minimal distance between layers.
-	double* breadth; //!< for every node : breadth[node] = width of the node.
-	double* height; //!< for every layer : height[layer] = height of max{height of node on layer}.
-	double* y; //!< for every layer : y coordinate of layer.
-	double* x; //!< for every node : x coordinate of node.
+	double m_minNodeDist = 0; //!< The minimal node distance on a layer.
+	double m_minLayerDist = 0; //!< The minimal distance between layers.
+	std::unique_ptr<double[]> breadth; //!< for every node : breadth[node] = width of the node.
+	std::unique_ptr<double[]> height; //!< for every layer : height[layer] = height of max{height of node on layer}.
+	std::unique_ptr<double[]> y; //!< for every layer : y coordinate of layer.
+	std::unique_ptr<double[]> x; //!< for every node : x coordinate of node.
 	/**
 	 * for every node : minimal possible distance between the center of a node
 	 * and first[layer[node]].
 	 */
-	double* totalB;
+	std::unique_ptr<double> totalB;
 
-	double* mDist; //!< Similar to totalB, used for temporary storage.
+	std::unique_ptr<double> mDist; //!< Similar to totalB, used for temporary storage.
 
-	bool m_fixedLayerDist; //!< 0 if distance between layers should be variable, 1 otherwise.
-	bool* virt; //!< for every node : virt[node] = 1 if node is virtual, 0 otherwise.
+	bool m_fixedLayerDist  = false; //!< 0 if distance between layers should be variable, 1 otherwise.
+	std::unique_ptr<bool[]> virt; //!< for every node : virt[node] = 1 if node is virtual, 0 otherwise.
 
 	void incrTo(double& d, double t) {
 		if (d < t) {

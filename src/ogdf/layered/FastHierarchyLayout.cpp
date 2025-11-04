@@ -175,26 +175,26 @@ void FastHierarchyLayout::doCall(const HierarchyLevelsBase& levels, GraphAttribu
 
 	int actLayer = 0;
 	int actNode = 0;
-	List<int>* newEdge;
+	std::unique_ptr<List<int>> newEdge;
 
 	// initialize class variables
 
 	n = GC.numberOfNodes();
 	m = GC.numberOfEdges();
 	k = levels.size();
-	x = new double[n];
-	breadth = new double[n];
-	layer = new int[n];
-	adj[0] = new List<int>[n];
-	adj[1] = new List<int>[n];
-	virt = new bool[n];
-	longEdge = new List<int>*[n];
-	height = new double[k];
-	y = new double[k];
-	first = new int[k + 1];
+	x = std::make_unique<double[]>(n);
+	breadth = std::make_unique<double[]>(n);
+	layer = std::make_unique<int[]>(n);
+	adj[0] = std::make_unique<List<int>[]>(n);
+	adj[1] = std::make_unique<List<int>[]>(n);
+	virt = std::make_unique<bool[]>(n);
+	longEdge = std::make_unique<std::unique_ptr<List<int>>[]>(n);
+	height = std::make_unique<double[]>(k);
+	y = std::make_unique<double[]>(k);
+	first = std::make_unique<int[]>(k + 1);
 
 	// CG
-	forallnodes { longEdge[actNode] = nullptr; }
+	forallnodes { longEdge.get()[actNode] = nullptr; }
 
 	// Compute first.
 	first[0] = 0;
@@ -213,9 +213,9 @@ void FastHierarchyLayout::doCall(const HierarchyLevelsBase& levels, GraphAttribu
 		if (!virt[n1]) {
 			breadth[n1] = getWidth(AGC, levels, v1);
 			incrTo(height[layer[n1]], getHeight(AGC, levels, v1));
-			newEdge = new List<int>;
+			newEdge = std::make_unique<List<int>>();
 			newEdge->pushBack(n1);
-			longEdge[n1] = newEdge;
+			longEdge.get()[n1] = std::move(newEdge);
 		}
 	}
 
@@ -224,7 +224,7 @@ void FastHierarchyLayout::doCall(const HierarchyLevelsBase& levels, GraphAttribu
 		edge e1 = GC.original(e);
 		//if(GC.chain(e1).size() > 1) {
 		if (e1 && GC.chain(e1).size() > 1 && e == GC.chain(e1).front()) {
-			newEdge = new List<int>;
+			newEdge = std::make_unique<List<int>>();
 			for (edge e2 : GC.chain(e1)) {
 				node v1 = e2->target();
 				int n1 = first[H.rank(v1)]
@@ -235,13 +235,13 @@ void FastHierarchyLayout::doCall(const HierarchyLevelsBase& levels, GraphAttribu
 
 			// CG: avoid assigning a redirected edge to a dummy node twice
 			if (newEdge->size() == 1 && longEdge[newEdge->front()] != nullptr) {
-				delete newEdge;
+				newEdge.reset();
 
 			} else {
 				// for every node in the the list, assign the longEdge (stored in
 				// newEdge) to the node.
 				for (int n1 : *newEdge) {
-					longEdge[n1] = newEdge;
+					longEdge.get()[n1] = std::move(newEdge);
 				}
 			}
 		}
@@ -278,29 +278,6 @@ void FastHierarchyLayout::doCall(const HierarchyLevelsBase& levels, GraphAttribu
 			AGC.y(v1) = y[layer[n1]];
 		}
 	}
-
-	// Cleanup
-
-	List<int>* toDelete;
-	forallnodes {
-		if (longEdge[actNode] != nullptr) {
-			toDelete = longEdge[actNode];
-			for (int n1 : *toDelete) {
-				longEdge[n1] = nullptr;
-			}
-			delete toDelete;
-		}
-	}
-	delete[] y;
-	delete[] first;
-	delete[] height;
-	delete[] x;
-	delete[] breadth;
-	delete[] layer;
-	delete[] adj[0];
-	delete[] adj[1];
-	delete[] virt;
-	delete[] longEdge;
 }
 
 void FastHierarchyLayout::sortLongEdges(int actNode, int dir, double* pos, bool& exD, double& dist,
@@ -522,15 +499,15 @@ void FastHierarchyLayout::moveLongEdge(int actNode, int dir, bool* marked) {
 	if (!marked[actNode] && virt[actNode]) {
 		// if actNode belongs to a long edge and has not been moved yet.
 		// mark all virtual nodes of the long edge
-		for (int next : *longEdge[actNode]) {
+		for (int next : *longEdge.get()[actNode]) {
 			marked[next] = 1;
 		}
 
 		// first non virtual node of long edge
-		int fst = adj[0][longEdge[actNode]->front()].front();
+		int fst = adj[0][longEdge.get()[actNode]->front()].front();
 
 		// second non virtual node of long edge
-		int lst = adj[1][longEdge[actNode]->back()].front();
+		int lst = adj[1][longEdge.get()[actNode]->back()].front();
 
 		// Contains an order of the two positions of the nonvirtual nodes of
 		// the long edge. The function moveLongEdge first tries to place the
