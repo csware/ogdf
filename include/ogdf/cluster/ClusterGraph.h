@@ -46,6 +46,7 @@
 #include <iosfwd>
 #include <memory>
 #include <utility>
+#include <limits>
 
 namespace ogdf {
 
@@ -63,7 +64,7 @@ class OGDF_EXPORT ClusterElement : private internal::GraphElement {
 	friend class ClusterGraph;
 	friend class internal::GraphList<ClusterElement>;
 
-	int m_id; //!< The index of this cluster.
+	size_t m_id; //!< The index of this cluster.
 	int m_depth; //!< The depth of this cluster in the cluster tree.
 
 public:
@@ -120,7 +121,7 @@ private:
 public:
 	//! Creates a new cluster element.
 #ifdef OGDF_DEBUG
-	ClusterElement(const ClusterGraph* pClusterGraph, int id)
+	ClusterElement(const ClusterGraph* pClusterGraph, size_t id)
 		: m_id(id)
 		, m_depth(0)
 		, m_parent(nullptr)
@@ -144,7 +145,7 @@ public:
 
 
 	//! Returns the (unique) index of the cluster.
-	int index() const { return m_id; }
+	size_t index() const { return m_id; }
 
 	//! Returns the depth of the cluster in the cluster tree.
 	int depth() const { return m_depth; }
@@ -219,13 +220,13 @@ public:
 	ListConstIterator<ClusterElement*> crBegin() const { return children.rbegin(); }
 
 	//! Returns the number of child clusters.
-	int cCount() { return children.size(); }
+	size_t cCount() { return children.size(); }
 
 	//! Returns the first element in list of child nodes.
 	ListConstIterator<node> nBegin() const { return nodes.begin(); }
 
 	//! Returns the number of child nodes.
-	int nCount() { return nodes.size(); }
+	size_t nCount() { return nodes.size(); }
 
 	//! Returns the first adjacency entry in the list of outgoing edges.
 	ListConstIterator<adjEntry> firstAdj() const { return adjEntries.begin(); }
@@ -236,7 +237,7 @@ public:
 	//! @}
 
 	//! Standard Comparer (uses cluster indices).
-	static int compare(const ClusterElement& x, const ClusterElement& y) { return x.m_id - y.m_id; }
+	static size_t compare(const ClusterElement& x, const ClusterElement& y) { return x.m_id - y.m_id; }
 	OGDF_AUGMENT_COMPARER(ClusterElement)
 
 	OGDF_NEW_DELETE
@@ -353,7 +354,7 @@ class OGDF_EXPORT ClusterGraph
 {
 	using Obs = Observable<ClusterGraphObserver, ClusterGraph>;
 
-	int m_clusterIdCount = 0; //!< The index assigned to the next created cluster.
+	size_t m_clusterIdCount = 0; //!< The index assigned to the next created cluster.
 
 	mutable cluster m_postOrderStart = nullptr; //!< The first cluster in postorder.
 	cluster m_rootCluster = nullptr; //!< The root cluster.
@@ -450,7 +451,7 @@ public:
 	int numberOfClusters() const { return clusters.size(); }
 
 	//! Returns the maximal used cluster index.
-	int maxClusterIndex() const { return m_clusterIdCount - 1; }
+	size_t maxClusterIndex() const { return m_clusterIdCount - 1; }
 
 	//! Returns the cluster to which a node belongs.
 	inline cluster clusterOf(node v) const { return m_nodeMap[v]; }
@@ -509,10 +510,11 @@ public:
 	void clearClusterTree(cluster C);
 
 	//! Inserts a new cluster; makes it a child of the cluster \p parent.
-	cluster newCluster(cluster parent, int id = -1);
+	cluster newCluster(cluster parent, size_t id = std::numeric_limits<size_t>::max());
 
 	//! Creates an empty cluster with index \p clusterId and parent \p parent.
-	cluster createEmptyCluster(const cluster parent = nullptr, int clusterId = -1);
+	cluster createEmptyCluster(const cluster parent = nullptr);
+	//cluster createEmptyCluster(const cluster parent = nullptr, size_t clusterId = std::numeric_limits<size_t>::max());
 
 	//! Creates a new cluster containing the nodes given by \p nodes; makes it a child of the cluster \p parent.
 	/**
@@ -772,7 +774,7 @@ public:
 	 */
 	//! @{
 
-	static inline int keyToIndex(cluster key) { return key->index(); }
+	static inline size_t keyToIndex(cluster key) { return key->index(); }
 
 	bool isKeyAssociated(cluster key) const {
 		if (key == nullptr) {
@@ -790,9 +792,11 @@ public:
 #endif
 	}
 
-	int calculateArraySize(int add) const { return calculateTableSize(m_clusterIdCount + add); }
+	size_t calculateArraySize(size_t add) const {
+		return calculateTableSize(m_clusterIdCount + add);
+	}
 
-	int maxKeyIndex() const { return (m_clusterIdCount)-1; }
+	size_t maxKeyIndex() const { return (m_clusterIdCount)-1; }
 
 	cluster_iterator begin() const { return clusters.begin(); }
 
@@ -826,12 +830,13 @@ protected:
 
 	//! Creates new cluster containing nodes in parameter list
 	//! with index \p clusterId.
-	cluster doCreateCluster(const SList<node>& nodes, const cluster parent, int clusterId = -1);
+	cluster doCreateCluster(const SList<node>& nodes, const cluster parent,
+			size_t clusterId = std::numeric_limits<size_t>::max());
 
 	//! Creates new cluster containing nodes in parameter list and
 	//! stores resulting empty clusters in list, cluster has index \p clusterId.
 	cluster doCreateCluster(const SList<node>& nodes, SList<cluster>& emptyCluster,
-			const cluster parent, int clusterId = -1);
+			const cluster parent, size_t clusterId = -1);
 
 	//! Clears all cluster data.
 	void doClear();
@@ -951,7 +956,7 @@ private:
 	void reinitGraph(const Graph& G);
 
 	//! Creates new cluster with given id, precondition: id not used
-	cluster newCluster(int id);
+	cluster newCluster(size_t id);
 
 	//! Creates new cluster.
 	cluster newCluster();

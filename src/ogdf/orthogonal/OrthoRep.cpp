@@ -807,7 +807,7 @@ void OrthoRep::dissect2(PlanRep* PG) {
 		// We iterate over faceCycle and look for occurrences of two
 		// consecutive 90 degree angles
 		ListIterator<adjEntry> it;
-		int runcount = 0; //check progress
+		size_t runcount = 0; //check progress
 		it = faceCycle.begin();
 		while ((faceCycle.size() > 4) && it.valid() && (runcount <= 2 * faceCycle.size())) {
 			if (m_angle[*it] == 1 && m_angle[*faceCycle.cyclicPred(it)] == 1) {
@@ -1379,7 +1379,7 @@ void OrthoRep::gridDissect(PlanRep* PG) {
 		// We iterate over faceCycle and look for occurrences of two
 		// consecutive 90 degree angles
 		ListIterator<adjEntry> it;
-		int runcount = 0; //check progress
+		size_t runcount = 0; //check progress
 		it = faceCycle.begin();
 		while ((faceCycle.size() > 4) && it.valid() && (runcount <= 2 * faceCycle.size())) {
 			if (m_angle[*it] == 1 && m_angle[*faceCycle.cyclicPred(it)] == 1) {

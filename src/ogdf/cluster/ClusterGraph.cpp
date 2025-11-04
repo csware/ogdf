@@ -64,7 +64,7 @@ void ClusterElement::getClusterInducedNodes(List<node>& clusterNodes) {
 	}
 }
 
-void ClusterElement::getClusterInducedNodes(NodeArray<bool>& clusterNode, int& num) {
+void ClusterElement::getClusterInducedNodes(NodeArray<bool>& clusterNode, size_t& num) {
 	for (node v : nodes) {
 		clusterNode[v] = true;
 	}
@@ -462,7 +462,7 @@ void ClusterGraph::emptyClusters(SList<cluster>& emptyCluster, SList<cluster>* c
 }
 
 // Inserts a new cluster prescribing its parent
-cluster ClusterGraph::newCluster(cluster parent, int id) {
+cluster ClusterGraph::newCluster(cluster parent, size_t id) {
 	OGDF_ASSERT(parent);
 	cluster c;
 	if (id > 0) {
@@ -480,7 +480,7 @@ cluster ClusterGraph::newCluster(cluster parent, int id) {
 
 //Insert a new cluster with given ID, precondition: id not used
 //has to be updated in the same way as newcluster()
-cluster ClusterGraph::newCluster(int id) {
+cluster ClusterGraph::newCluster(size_t id) {
 	m_adjAvailable = false;
 	m_postOrderStart = nullptr;
 	if (id >= m_clusterIdCount) {
@@ -519,9 +519,10 @@ cluster ClusterGraph::newCluster() {
 	return c;
 }
 
-cluster ClusterGraph::createEmptyCluster(const cluster parent, int clusterId) {
+cluster ClusterGraph::createEmptyCluster(const cluster parent) {
 	//if no id given, use next free id
-	if (clusterId < 0) {
+	size_t clusterId;
+	if (clusterId == std::numeric_limits<size_t>::max()) {
 		clusterId = m_clusterIdCount;
 	}
 	//create the new cluster
@@ -554,7 +555,7 @@ cluster ClusterGraph::createCluster(const SList<node>& nodes, const cluster pare
 	return c;
 }
 
-cluster ClusterGraph::doCreateCluster(const SList<node>& nodes, const cluster parent, int clusterId) {
+cluster ClusterGraph::doCreateCluster(const SList<node>& nodes, const cluster parent, size_t clusterId) {
 	if (nodes.empty()) {
 		return nullptr;
 	}
@@ -580,7 +581,7 @@ cluster ClusterGraph::doCreateCluster(const SList<node>& nodes, const cluster pa
 }
 
 cluster ClusterGraph::doCreateCluster(const SList<node>& nodes, SList<cluster>& emptyCluster,
-		const cluster parent, int clusterId) {
+		const cluster parent, size_t clusterId) {
 	// Even if m_allowEmptyClusters is set we check if a cluster
 	// looses all of its nodes and has
 	// no more entries and childs. This can be used for special cluster

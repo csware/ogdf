@@ -670,7 +670,7 @@ void OptimalHierarchyClusterLayout::computeXCoordinates(const ExtendedNestingGra
 			// (i.e. the original edge is represented by at least
 			// three edges in H) get a special weight; all others
 			// have weight 1.0
-			int sz = H.chain(H.origEdge(e)).size();
+			size_t sz = H.chain(H.origEdge(e)).size();
 			if (sz >= 2) {
 				node uOrig = H.origNode(e->source());
 				node vOrig = H.origNode(e->target());

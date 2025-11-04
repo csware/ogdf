@@ -84,10 +84,10 @@ void quicksortTemplate(LIST& L) {
 // sorts list L using quicksort and compare element comp
 template<class LIST, class COMPARER>
 void quicksortTemplate(LIST& L, const COMPARER& comp) {
-	const int n = L.size();
+	const size_t n = L.size();
 	Array<typename LIST::value_type> A(n);
 
-	int i = 0;
+	size_t i = 0;
 	for (const typename LIST::value_type& x : L) {
 		A[i++] = x;
 	}

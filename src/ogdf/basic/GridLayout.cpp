@@ -330,9 +330,9 @@ double GridLayout::totalEdgeLength() const {
 	return length;
 }
 
-int GridLayout::numberOfBends() const {
+size_t GridLayout::numberOfBends() const {
 	const Graph* pG = m_x.graphOf();
-	int num = 0;
+	size_t num = 0;
 
 	for (edge e : pG->edges) {
 		num += m_bends[e].size();

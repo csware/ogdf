@@ -178,7 +178,7 @@ public:
 	/**
 	 * This operation has constant runtime.
 	 */
-	int size() const { return m_elements.size(); }
+	size_t size() const { return m_elements.size(); }
 
 	typename list_type::const_iterator begin() const { return m_elements.begin(); }
 
@@ -216,11 +216,11 @@ protected:
 
 	void keyAdded(typename Registry::key_type v) override { }
 
-	void keysSwapped(int index1, int index2) override {
+	void keysSwapped(size_t index1, size_t index2) override {
 		OGDF_ASSERT(false); // RegisteredSets break on key swapping
 	}
 
-	void keysCopied(int toIndex, int fromIndex) override {
+	void keysCopied(size_t toIndex, size_t fromIndex) override {
 		OGDF_ASSERT(false); // RegisteredSets break on key copying
 	}
 

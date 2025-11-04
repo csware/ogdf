@@ -146,7 +146,7 @@ public:
 	double totalEdgeLength() const;
 
 	//! Computes the total number of bends in the grid layout.
-	int numberOfBends() const;
+	size_t numberOfBends() const;
 
 	/**
 	 * \brief Transforms the grid layout to a layout.

@@ -351,7 +351,7 @@ OGDF_EXPORT bool isPointCoveredByNode(const DPoint& point, const DPoint& v, cons
 	DPolyline polygon;
 
 	auto isInConvexCCWPolygon = [&] {
-		for (int i = 0; i < polygon.size(); i++) {
+		for (size_t i = 0; i < polygon.size(); i++) {
 			DPoint edgePt1 = v + *polygon.get(i);
 			DPoint edgePt2 = v + *polygon.get((i + 1) % polygon.size());
 

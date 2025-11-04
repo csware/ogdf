@@ -333,7 +333,7 @@ public:
 	void consistencyCheck() const;
 #endif
 
-	static inline int keyToIndex(face key) { return key->index(); }
+	static inline size_t keyToIndex(face key) { return key->index(); }
 
 	bool isKeyAssociated(face key) const {
 		if (key == nullptr) {
@@ -351,9 +351,9 @@ public:
 #endif
 	}
 
-	int calculateArraySize(int add) const { return calculateTableSize(m_faceIdCount + add); }
+	size_t calculateArraySize(size_t add) const { return calculateTableSize(m_faceIdCount + add); }
 
-	int maxKeyIndex() const { return (m_faceIdCount)-1; }
+	size_t maxKeyIndex() const { return (m_faceIdCount)-1; }
 
 	face_iterator begin() const { return faces.begin(); }
 

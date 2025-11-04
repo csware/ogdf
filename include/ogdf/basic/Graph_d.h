@@ -607,7 +607,7 @@ public:
 	GraphRegistry(Graph* graph, int* nextKeyIndex)
 		: m_pGraph(graph), m_nextKeyIndex(nextKeyIndex) { }
 
-	static inline int keyToIndex(Key* key) { return key->index(); }
+	static inline size_t keyToIndex(Key* key) { return key->index(); }
 
 	bool isKeyAssociated(Key* key) const {
 		if (key == nullptr) {
@@ -625,11 +625,11 @@ public:
 #endif
 	}
 
-	int calculateArraySize(int add) const {
+	size_t calculateArraySize(size_t add) const {
 		return calculateTableSize((*m_nextKeyIndex + add) * Factor);
 	}
 
-	int maxKeyIndex() const { return ((*m_nextKeyIndex) * Factor) - 1; }
+	size_t maxKeyIndex() const { return ((*m_nextKeyIndex) * Factor) - 1; }
 
 	//! Returns a pointer to the associated graph.
 	Graph* graphOf() const { return m_pGraph; }
@@ -1916,10 +1916,10 @@ public:
 		int numberOfCCs() const { return m_numCC; }
 
 		//! Returns the number of nodes in connected component \p cc.
-		int numberOfNodes(int cc) const { return stopNode(cc) - startNode(cc); }
+		size_t numberOfNodes(int cc) const { return stopNode(cc) - startNode(cc); }
 
 		//! Returns the number of edges in connected component \p cc.
-		int numberOfEdges(int cc) const { return stopEdge(cc) - startEdge(cc); }
+		size_t numberOfEdges(int cc) const { return stopEdge(cc) - startEdge(cc); }
 
 		//! Returns the index of the first node in connected component \p cc.
 		int startNode(int cc) const { return m_startNode[cc]; }

@@ -232,8 +232,8 @@ public:
 template<class E>
 class ListPure {
 protected:
-	ListElement<E>* m_head; //!< Pointer to first element.
-	ListElement<E>* m_tail; //!< Pointer to last element.
+	ListElement<E>* m_head = nullptr; //!< Pointer to first element.
+	ListElement<E>* m_tail = nullptr; //!< Pointer to last element.
 
 public:
 	//! Represents the data type stored in a list element.
@@ -252,17 +252,17 @@ public:
 	using reverse_iterator = ListReverseIterator<E>;
 
 	//! Constructs an empty doubly linked list.
-	ListPure() : m_head(nullptr), m_tail(nullptr) { }
+	ListPure() { }
 
 	//! Constructs a doubly linked list containing the elements in \p init.
-	ListPure(std::initializer_list<E> init) : m_head(nullptr), m_tail(nullptr) {
+	ListPure(std::initializer_list<E> init) {
 		for (const E& x : init) {
 			pushBack(x);
 		}
 	}
 
 	//! Constructs a doubly linked list that is a copy of \p L.
-	ListPure(const ListPure<E>& L) : m_head(nullptr), m_tail(nullptr) { copy(L); }
+	ListPure(const ListPure<E>& L) { copy(L); }
 
 	//! Constructs a doubly linked list containing the elements of \p L (move semantics).
 	/**
@@ -290,8 +290,8 @@ public:
 	 * Notice that this method requires to iterate over the whole list and takes linear running time!
 	 * If you require frequent access to the size of the list, consider using ogdf::List instead of ogdf::ListPure.
 	 */
-	virtual int size() const {
-		int count = 0;
+	virtual size_t size() const {
+		size_t count = 0;
 		for (ListElement<E>* pX = m_head; pX; pX = pX->m_next) {
 			++count;
 		}
@@ -338,7 +338,7 @@ public:
 	/**
 	 * The running time of this method is linear in \p pos.
 	 */
-	const_iterator get(int pos) const {
+	const_iterator get(size_t pos) const {
 		ListElement<E>* pX;
 		for (pX = m_head; pX != nullptr; pX = pX->m_next) {
 			if (pos-- == 0) {
@@ -352,7 +352,7 @@ public:
 	/**
 	 * The running time of this method is linear in \p pos.
 	 */
-	iterator get(int pos) {
+	iterator get(size_t pos) {
 		ListElement<E>* pX;
 		for (pX = m_head; pX != nullptr; pX = pX->m_next) {
 			if (pos-- == 0) {
@@ -1449,7 +1449,7 @@ protected:
  */
 template<class E>
 class List : private ListPure<E> {
-	int m_count; //!< The length of the list.
+	size_t m_count; //!< The length of the list.
 
 public:
 	using typename ListPure<E>::value_type;
@@ -1464,7 +1464,7 @@ public:
 	List() : m_count(0) { }
 
 	//! Constructs a doubly linked list containing the elements in \p init.
-	List(std::initializer_list<E> init) : ListPure<E>(init), m_count((int)init.size()) { }
+	List(std::initializer_list<E> init) : ListPure<E>(init), m_count(init.size()) { }
 
 	//! Constructs a doubly linked list that is a copy of \p L.
 	List(const List<E>& L) : ListPure<E>(L), m_count(L.m_count) { }
@@ -1485,7 +1485,7 @@ public:
 	/**
 	 * This method has constant runtime (in contrast to ListPure::size()), since the list maintains the current size.
 	 */
-	int size() const { return m_count; }
+	size_t size() const override { return m_count; }
 
 	//! Conversion to const ListPure.
 	const ListPure<E>& getListPure() const { return *this; }
@@ -1847,7 +1847,7 @@ public:
 	reverse_iterator rend() const { return List<E>::crend(); }
 
 	//! Returns the number of elements in the container.
-	int size() const { return List<E>::size(); }
+	size_t size() const { return List<E>::size(); }
 };
 
 }

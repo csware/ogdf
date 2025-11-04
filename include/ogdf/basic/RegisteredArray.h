@@ -61,13 +61,13 @@ template<typename Key, typename Registry, typename Iterator = void>
 class RegistryBase; // IWYU pragma: keep
 
 //! The default minimum table size for registered arrays.
-static constexpr int MIN_TABLE_SIZE = (1 << 4);
+static constexpr size_t MIN_TABLE_SIZE = (1 << 4);
 
 //! The default growth function for registered arrays.
 /**
  * @return The smallest power of 2 that is no less than \p actualCount and #MIN_TABLE_SIZE.
  */
-inline int calculateTableSize(int actualCount) {
+inline size_t calculateTableSize(size_t actualCount) {
 	return Math::nextPower2(MIN_TABLE_SIZE, actualCount);
 }
 
@@ -92,10 +92,10 @@ public:
 	virtual void keyAdded(typename Registry::key_type v) = 0;
 
 	//! Called when an entry is swapped between \p index1 and \p index2 in all registered arrays.
-	virtual void keysSwapped(int index1, int index2) = 0;
+	virtual void keysSwapped(size_t index1, size_t index2) = 0;
 
 	//! Called when an entry is copied from \p fromIndex to \p toIndex in all registered arrays.
-	virtual void keysCopied(int toIndex, int fromIndex) = 0;
+	virtual void keysCopied(size_t toIndex, size_t fromIndex) = 0;
 
 	//! Called by watched registry when its clear function is called, just before things are removed.
 	virtual void keysCleared() = 0;
@@ -113,16 +113,16 @@ public:
  * <a href="https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">CRTP</a>:
  * \code{.cpp}
  * //! Returns the index of \p key.
- * static inline int keyToIndex(Key key);
+ * static inline size_t keyToIndex(Key key);
  *
  * //! Returns whether \p key is associated with this registry.
  * bool isKeyAssociated(Key key) const;
  *
  * //! Returns the maximum index of all keys managed by this registry.
- * int maxKeyIndex() const;
+ * size_t maxKeyIndex() const;
  *
  * //! Returns the array size currently requested by this registry.
- * int calculateArraySize(int add) const;
+ * size_t calculateArraySize(size_t add) const;
  * \endcode
  *
  * \remark To avoid frequent costly resize operations, the array size returned by calculateArraySize
@@ -151,7 +151,7 @@ private:
 
 	mutable registration_list_type m_registeredArrays;
 	bool m_autoShrink = false;
-	int m_size = 0;
+	size_t m_size = 0;
 
 #ifndef OGDF_MEMORY_POOL_NTS
 	mutable std::mutex m_mutexRegArrays;
@@ -229,29 +229,29 @@ public:
 
 	//! Resizes all arrays to the size requested by calculateArraySize(). Only shrinks the arrays if auto shrink is
 	//! enabled
-	void resizeArrays() { resizeArrays(static_cast<Registry*>(this)->calculateArraySize(0)); }
+	void resizeArrays() { resizeArrays(static_cast<Registry*>(this)->calculateArraySize(size_t(0))); }
 
 	//! Resizes all arrays to \p size. Only shrinks the arrays if auto shrink is enabled
-	void resizeArrays(int size) { resizeArrays(size, m_autoShrink); }
+	void resizeArrays(size_t size) { resizeArrays(size, m_autoShrink); }
 
 	//! Resizes all arrays to \p size. If \p shrink is \c true, the arrays may also shrink.
-	void resizeArrays(int size, bool shrink) {
+	void resizeArrays(size_t size, bool shrink) {
 		if (size == m_size) {
 			return;
 		}
-		m_size = size = max(size, 0);
+		m_size = size = max(size, size_t(0));
 		for (registered_array_type* ab : m_registeredArrays) {
 			ab->resize(size, shrink);
 		}
 	}
 
 	//! Resizes all arrays to make space of \p new_keys new keys.
-	void reserveSpace(int new_keys) {
+	void reserveSpace(size_t new_keys) {
 		resizeArrays(static_cast<Registry*>(this)->calculateArraySize(new_keys));
 	}
 
 	//! Swaps the entries at \p index1 and \p index2 in all registered arrays.
-	void swapArrayEntries(int index1, int index2) {
+	void swapArrayEntries(size_t index1, size_t index2) {
 		for (registered_array_type* ab : m_registeredArrays) {
 			ab->swapEntries(index1, index2);
 		}
@@ -261,7 +261,7 @@ public:
 	}
 
 	//! Copies the entry from \p fromIndex to \p toIndex in all registered arrays.
-	void copyArrayEntries(int toIndex, int fromIndex) {
+	void copyArrayEntries(size_t toIndex, size_t fromIndex) {
 		for (registered_array_type* ab : m_registeredArrays) {
 			ab->copyEntry(toIndex, fromIndex);
 		}
@@ -291,7 +291,7 @@ public:
 	void setAutoShrink(bool mAutoShrink) { m_autoShrink = mAutoShrink; }
 
 	//! Returns the current size of all registered arrays.
-	int getArraySize() const { return m_size; }
+	size_t getArraySize() const { return m_size; }
 
 	using Obs::getObservers;
 };
@@ -344,17 +344,17 @@ public:
 	}
 
 	//! Resizes the registered array to \p size. The array will only shrink if \p shrink is \c true.
-	virtual void resize(int size, bool shrink) = 0;
+	virtual void resize(size_t size, bool shrink) = 0;
 
 	//! Swaps the entries stored at \p index1 and \p index2.
-	virtual void swapEntries(int index1, int index2) = 0;
+	virtual void swapEntries(size_t index1, size_t index2) = 0;
 
 	//! Copies the entry stored at \p oldIndex to \p newIndex.
-	virtual void copyEntry(int newIndex, int oldIndex) = 0;
+	virtual void copyEntry(size_t newIndex, size_t oldIndex) = 0;
 
 	//! Clears the array and associates it with no registry.
 	void unregister() noexcept {
-		resize(0, true);
+		resize(0u, true);
 		reregister(nullptr);
 	}
 
@@ -624,20 +624,20 @@ protected:
 		return *registeredAt();
 	}
 
-	void resize(int size, bool shrink) override {
+	void resize(size_t size, bool shrink) override {
 		m_data.resize(size);
 		if (shrink) {
 			m_data.shrink_to_fit();
 		}
 	}
 
-	void swapEntries(int index1, int index2) override {
+	void swapEntries(size_t index1, size_t index2) override {
 		using std::swap;
 		swap(m_data.at(index1), m_data.at(index2));
 	}
 
 	//! This operation is not supported for registered arrays without default.
-	void copyEntry(int toIndex, int fromIndex) override {
+	void copyEntry(size_t toIndex, size_t fromIndex) override {
 		// silently ignored
 	}
 };
@@ -752,11 +752,11 @@ public:
 
 protected:
 	//! Copies the entry stored at \p oldIndex to \p newIndex.
-	void copyEntry(int toIndex, int fromIndex) override {
+	void copyEntry(size_t toIndex, size_t fromIndex) override {
 		RA::m_data.at(toIndex) = RA::m_data.at(fromIndex);
 	}
 
-	void resize(int size, bool shrink) override {
+	void resize(size_t size, bool shrink) override {
 		RA::m_data.resize(size, m_default);
 		if (shrink) {
 			RA::m_data.shrink_to_fit();
